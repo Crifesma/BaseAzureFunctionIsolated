@@ -38,7 +38,7 @@ cd gestionMonedasExtranjeras
 rm -rf .git
 git init
 git add .
-git commit -m "Proyecto base clonado desde BaseAzureFunctionIsolated"
+git commit -m "Commit inicial"
 ```
 
 3. Asocia un nuevo repositorio remoto
