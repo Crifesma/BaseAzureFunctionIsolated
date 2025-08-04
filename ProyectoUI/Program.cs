@@ -7,75 +7,71 @@ using BussinesLogic.Utils;
 using AzureFunctionPB.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Azure.Functions.Worker.Builder;
+using Microsoft.Azure.Functions.Worker.Extensions.Http;
+using Serilog;
+using Serilog.Events;
 
-var host = new HostBuilder()
-    .ConfigureFunctionsWorkerDefaults(builder =>
+public class Programq
+{
+
+    static async Task Main(string[] args)
     {
+        FunctionsApplicationBuilder builder = FunctionsApplication.CreateBuilder(args);
+        builder.ConfigureFunctionsWebApplication();
+
         builder.UseMiddleware<ExceptionHandlingMiddleware>();
         builder.UseMiddleware<AutheticationMiddleware>();
-    })
-    .ConfigureFunctionsWebApplication((IFunctionsWorkerApplicationBuilder builder) =>
-    {
-        
-    })
-    .ConfigureServices(
-        (context, services) =>
-        {
-            //Logs, cuidado con los costos
-            //services.AddApplicationInsightsTelemetryWorkerService();
-            //services.ConfigureFunctionsApplicationInsights();
 
-            // Configurar AppSettings
-            services.AddOptions<AppSettings>()
-                .Configure<IConfiguration>((settings, configuration) =>
-                {
-                    configuration.Bind(settings);
-                });
-
-            // Registrar HttpClient
-            services.AddHttpClient();
-
-            // Registrar servicios
-            services.AddScoped<ExcelProcessor>();
-
-            //Authentication
-            IConfigurationSection azureAdSection = context.Configuration.GetSection("AzureAd");
-
-            azureAdSection.GetSection("Instance").Value = context.Configuration.GetValue<string>("Instance");
-            azureAdSection.GetSection("Domain").Value = context.Configuration.GetValue<string>("Domain");
-            azureAdSection.GetSection("TenantId").Value = context.Configuration.GetValue<string>("TenantId");
-            azureAdSection.GetSection("ClientId").Value = context.Configuration.GetValue<string>("ClientId");
-            azureAdSection.GetSection("ClientSecret").Value = context.Configuration.GetValue<string>("ClientSecret");
-            azureAdSection.GetSection("AuthorityUrl").Value = context.Configuration.GetValue<string>("AuthorityUrl");
-            azureAdSection.GetSection("Audience").Value = context.Configuration.GetValue<string>("Audience");
-
-            services.Configure<JwtBearerOptions>(options =>
+        builder.Services.AddOptions<AppSettings>()
+            .Configure<IConfiguration>((settings, configuration) =>
             {
-                options.Authority = context.Configuration.GetValue<string>("AuthorityUrl");
-                options.Audience = context.Configuration.GetValue<string>("Audience");
-
-                context.Configuration.Bind("AzureAd", options);
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = false
-                };
-                options.Events = new JwtBearerEvents();
+                configuration.Bind(settings);
             });
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddHttpClient();
 
-            services.AddSingleton(context.Configuration);
+        builder.Services.AddScoped<ExcelProcessor>();
 
-            //services.AddAuthentication(sharedOptions =>
-            //{
-            //    sharedOptions.DefaultScheme = Constants.Bearer;
-            //    sharedOptions.DefaultChallengeScheme = Constants.Bearer;
-            //})
-            //.AddMicrosoftIdentityWebApi(context.Configuration);
 
-        }
-    )
-    .Build();
+        //Authentication
+        IConfigurationSection azureAdSection = builder.Configuration.GetSection("AzureAd");
 
-host.Run();
+        azureAdSection.GetSection("Instance").Value = builder.Configuration.GetValue<string>("Instance");
+        azureAdSection.GetSection("Domain").Value = builder.Configuration.GetValue<string>("Domain");
+        azureAdSection.GetSection("TenantId").Value = builder.Configuration.GetValue<string>("TenantId");
+        azureAdSection.GetSection("ClientId").Value = builder.Configuration.GetValue<string>("ClientId");
+        azureAdSection.GetSection("ClientSecret").Value = builder.Configuration.GetValue<string>("ClientSecret");
+        azureAdSection.GetSection("AuthorityUrl").Value = builder.Configuration.GetValue<string>("AuthorityUrl");
+        azureAdSection.GetSection("Audience").Value = builder.Configuration.GetValue<string>("Audience");
+
+        builder.Services.Configure<JwtBearerOptions>(options =>
+        {
+            options.Authority = builder.Configuration.GetValue<string>("AuthorityUrl");
+            options.Audience = builder.Configuration.GetValue<string>("Audience");
+
+            builder.Configuration.Bind("AzureAd", options);
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = false
+            };
+            options.Events = new JwtBearerEvents();
+        });
+
+        builder.Services.AddSingleton(builder.Configuration);
+
+        //services.AddAuthentication(sharedOptions =>
+        //{
+        //    sharedOptions.DefaultScheme = Constants.Bearer;
+        //    sharedOptions.DefaultChallengeScheme = Constants.Bearer;
+        //})
+        //.AddMicrosoftIdentityWebApi(context.Configuration);
+
+        builder.Build().Run();
+        
+    } 
+
+}
