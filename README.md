@@ -28,8 +28,8 @@ Si deseas utilizar este repositorio como punto de partida para un nuevo proyecto
 ### 1. Clona el repositorio con un nuevo nombre
 
 ```bash
-git clone https://github.com/Crifesma/BaseAzureFunctionIsolated.git gestionMonedasExtranjeras
-cd gestionMonedasExtranjeras
+git clone https://github.com/Crifesma/BaseAzureFunctionIsolated.git NuevaSolucion
+cd NuevaSolucion
 ```
 
 2. Elimina el historial de versiones si lo usarás como template limpio
@@ -51,11 +51,11 @@ git push -u origin main
 ```
 4. Renombra los archivos de solución (opcional)
 ```bash
-mv BaseAzureFunctionIsolated.sln gestionMonedasExtranjeras.sln
+mv BaseAzureFunction.sln NuevaSolucion.sln
 ```
 También puedes reemplazar todos los nombres internos del namespace o proyecto con comandos como:
 ```bash
-grep -rl 'BaseAzureFunctionIsolated' . | xargs sed -i '' 's/BaseAzureFunctionIsolated/gestionMonedasExtranjeras/g'
+grep -rl 'BaseAzureFunction' . | xargs sed -i '' 's/BaseAzureFunction/NuevaSolucion/g'
 ```
 Asegúrate de revisar los cambios en los archivos .csproj, .sln y clases para reflejar correctamente el nuevo nombre del proyecto.
 
@@ -70,7 +70,7 @@ Requisitos previos
 Ejecución local
 	1.	Restaura las dependencias y compila la solución:
 ```bash
-dotnet build BaseAzureFunction.sln
+dotnet build NuevaSolucion.sln
 ```
    2.	Ve al proyecto de funciones y ejecuta:
 ```bash
