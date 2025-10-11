@@ -31,7 +31,7 @@ public class Programq
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddHttpClient();
 
-        builder.Services.AddScoped<ExcelProcessor>();
+        //builder.Services.AddScoped<ExcelProcessor>();
 
 
         //Authentication
